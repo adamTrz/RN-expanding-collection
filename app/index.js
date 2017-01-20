@@ -44,9 +44,11 @@ class App extends Component {
                     showsHorizontalScrollIndicator = {false}
                     dataSource = {dataSource}
                     renderRow = {this.renderRow}
-                />
+                    />
                 <Header animatedY = {animatedY} />
-                <Footer index={currentIndex} count = {count} />
+                <Footer index={currentIndex} count = {count}
+                    animatedY = {animatedY}
+                    />
             </Components.LinearGradient>
         )
     }
@@ -84,36 +86,31 @@ class App extends Component {
 
 export default App;
 
-const Header = ({animatedY}) => {
-    // const headerOpacity = (animatedY) => {
-    //     if (animatedY >= -130 || !animatedY) return {
-    //         opacity: 1
-    //     }
-    //     else if (animatedY >= -300) return {
-    //         opacity: animatedY*2/3-1
-    //     }
-    //     else return {opacity: 0}
-    // }
-    return (
-        <View style={styles.sceneHeader} >
-            <Image source={{uri: icons.magifyIcon}}
-                style={styles.headerIcon} />
-            <Animated.Text style={[styles.fontHeader, {
-                opacity: animatedY.interpolate({
-                    inputRange: [-350, -130, 0],
-                    outputRange: [0, 1, 1]
-                })
-            }]}>
-                TOFIND
-            </Animated.Text>
-            <Image source={{uri: icons.crosshairIcon}}
-                style={styles.headerIcon} />
-        </View>
-    )
-}
+const Header = ({animatedY}) => (
+    <View style={styles.sceneHeader} >
+        <Image source={{uri: icons.magifyIcon}}
+            style={styles.headerIcon} />
+        <Animated.Text style={[styles.fontHeader, {
+            opacity: animatedY.interpolate({
+                inputRange: [-130 ,-100, 0],
+                outputRange: [0, 1, 1]
+            })
+        }]}>
+            TOFIND
+        </Animated.Text>
+        <Image source={{uri: icons.crosshairIcon}}
+            style={styles.headerIcon} />
+    </View>
+)
 
-const Footer = ({index, count}) => (
-    <View style = {styles.sceneFooter}>
+
+const Footer = ({index, count, animatedY}) => (
+    <Animated.View style = {[styles.sceneFooter, {
+        opacity: animatedY.interpolate({
+            inputRange: [-130 ,-100, 0],
+            outputRange: [0, 1, 1]
+            })
+        }]}>
         <View style={{paddingBottom: 10}}>
             <Text style={styles.fontFooterCounter}>
                 <Text style={{color: '#9297C8'}}>
@@ -129,7 +126,7 @@ const Footer = ({index, count}) => (
             <Image source={{uri: icons.locationIcon}} style={styles.footerIcon}/>
             <Image source={{uri: icons.userIcon}} style={styles.footerIcon}/>
         </View>
-    </View>
+    </Animated.View>
 )
 
 const styles = StyleSheet.create({

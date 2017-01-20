@@ -8,6 +8,12 @@ import {
 import { icons } from './constants'
 const {width, height} = Dimensions.get('window')
 
+const cardBaseHeight = height*0.55
+const cardBaseWidth = width*0.7
+const cardFinalHeight = 130
+const topY = -(height - cardBaseHeight)+cardFinalHeight/2-30-5
+    //diff between cardHeight and hegih of device minus final card height and fake header from index.js. Roughly :)
+
 class Card extends React.Component {
 
     constructor(props) {
@@ -76,25 +82,25 @@ class Card extends React.Component {
             toValue: 0
         }).start(() => {
             this.setState({base: true, first: false})
-            this.props.animating(false)
+            // this.props.animating(false)
         })
     }
 
     goToFirst() {
-        Animated.spring(this.state.anim, {
-            toValue: {x: 0, y: -100}
+        Animated.timing(this.state.anim, {
+            toValue: {x: 0, y: -100}, duration: 300
         }).start(() => {
             this.setState({first: true, second: false, base: false})
-            // this.props.animating(false)
+            this.props.animating(false)
         })
     }
 
     goToSecond() {
-        Animated.spring(this.state.anim, {
-            toValue: {x: 0, y: -350}
+        Animated.timing(this.state.anim, {
+            toValue: {x: 0, y: topY}, duration: 800
         }).start(() => {
             this.setState({secondBase: false, thirdBase: true})
-            // this.props.animating(false)
+            this.props.animating(true)
         })
     }
 
@@ -112,7 +118,7 @@ class Card extends React.Component {
                     {...this._panResponder.panHandlers}
                     >
                     <Animated.Image source={{uri: img}}
-                        style={[styles.cardBase]}
+                        style={[styles.cardBase, getBaseCardStyle(y)]}
                         >
                         <View style={styles.cardTextsWrapper}>
                             <Text style={styles.fontCardTitle}>
@@ -146,34 +152,55 @@ class Card extends React.Component {
 
 export default Card;
 
-const tresholds = [ -350, -200, -100, 0 ]
+const tresholds = [ topY, -125, -100, 0 ]
+
+getBaseCardStyle = y => {
+    return {
+        width: y.interpolate({
+            inputRange: tresholds,
+            outputRange: [width, cardBaseWidth, cardBaseWidth, cardBaseWidth],
+            extrapolate: 'clamp'
+        }),
+        height: y.interpolate({
+            inputRange: tresholds,
+            outputRange: [cardFinalHeight, cardBaseHeight, cardBaseHeight, cardBaseHeight],
+            extrapolate: 'clamp'
+        }),
+        borderRadius: y.interpolate({
+            inputRange: tresholds,
+            outputRange: [0, 8, 8, 8],
+            extrapolate: 'clamp'
+        })
+    }
+}
 
 getBottomCardStyle = y => {
     return {
         left: y.interpolate({
             inputRange: tresholds,
-            outputRange: [-width*0.8/2, -width*0.8/2, -width*0.8/2, -width*0.7/2],
+            outputRange: [-width/2, -width*0.9/2, -width*0.8/2, -cardBaseWidth/2],
             extrapolate: 'clamp'
         }),
-        bottom: y.interpolate({
+        top: y.interpolate({
             inputRange: tresholds,
-            outputRange: [-25, -25, -25, 0],
+            outputRange: [-cardBaseHeight, -cardBaseHeight, -cardBaseHeight, -cardBaseHeight],
             extrapolate: 'clamp'
         }),
         width: y.interpolate({
             inputRange: tresholds,
-            outputRange: [width*0.8, width*0.8, width*0.8, width*0.7],
+            outputRange: [width, width*0.9, width*0.8, cardBaseWidth],
             extrapolate: 'clamp'
         }),
         height: y.interpolate({
             inputRange: tresholds,
-            outputRange: [height*0.62, height*0.62, height*0.62, height*0.55],
+            outputRange: [height-30, height*0.75, height*0.62, cardBaseHeight],
             extrapolate: 'clamp'
         }),
         opacity: y.interpolate({
             inputRange: [-100, 0],
             outputRange: [1, 0]
         }),
+
     }
 }
 
@@ -182,6 +209,8 @@ getContentStyle = y => {
     }
 }
 
+
+// COMPONENTS:
 
 const Content = ({y, city}) => (
     <Animated.View style={[styles.contentBase, getContentStyle(y)]} >
@@ -252,8 +281,7 @@ const styles = StyleSheet.create({
     },
     cardBase: {
         width: width*0.7,
-        borderRadius: 8,
-        height: height*0.55, resizeMode: 'cover'
+        height: cardBaseHeight, resizeMode: 'cover'
     },
     cardTextsWrapper: {
         paddingVertical: 20, flex: 1,justifyContent: 'space-between'
