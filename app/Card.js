@@ -5,6 +5,7 @@ import {
     ScrollView, StyleSheet, Text, View,
 } from 'react-native'
 
+import { icons } from './constants'
 const {width, height} = Dimensions.get('window')
 
 class Card extends React.Component {
@@ -126,8 +127,8 @@ class Card extends React.Component {
                                 <Text style={styles.fontCardCoordinates}>
                                     {coordinates[0]}
                                 </Text>
-                                <Image source={{uri: locationIcon}}
-                                    style={styles.locationIcon}
+                                <Image source={{uri: icons.locationIconFull}}
+                                    style={styles.locationIconFull}
                                     />
                                 <Text style={styles.fontCardCoordinates}>
                                     {coordinates[1]}
@@ -137,14 +138,12 @@ class Card extends React.Component {
 
                     </Animated.Image>
                 </Animated.View>
-                <Animated.View style={[
-                    styles.bottomCardBase, getBottomCardStyle(y), styles.cardShadow, {
-                        zIndex: 5, backgroundColor: 'green'
-                    }
-                    ]}>
-                        <Content y = {y} city = {city} />
+                <View style={styles.cardShadow}>
+                    <Animated.View style={[
+                        styles.bottomCardBase, getBottomCardStyle(y)]}>
+                            <Content y = {y} city = {city} />
                     </Animated.View>
-
+                </View>
             </View>
         )
     }
@@ -152,14 +151,18 @@ class Card extends React.Component {
 
 export default Card;
 
-const tresholds = [ -125, -100, -50, 0 ]
-const locationIcon = 'https://cdn3.iconfinder.com/data/icons/pyconic-icons-1-2/512/location-pin-512.png'
+const tresholds = [ -350, -200, -100, 0 ]
 
 getBottomCardStyle = y => {
     return {
         left: y.interpolate({
             inputRange: tresholds,
-            outputRange: [width*0.1, width*0.1, width*0.1, width*0.15],
+            outputRange: [-width*0.8/2, -width*0.8/2, -width*0.8/2, -width*0.7/2],
+            extrapolate: 'clamp'
+        }),
+        bottom: y.interpolate({
+            inputRange: tresholds,
+            outputRange: [-25, -25, -25, 0],
             extrapolate: 'clamp'
         }),
         width: y.interpolate({
@@ -169,11 +172,11 @@ getBottomCardStyle = y => {
         }),
         height: y.interpolate({
             inputRange: tresholds,
-            outputRange: [height*0.65, height*0.65, height*0.65, height*0.55],
+            outputRange: [height*0.62, height*0.62, height*0.62, height*0.55],
             extrapolate: 'clamp'
         }),
         opacity: y.interpolate({
-            inputRange: [-50, 0],
+            inputRange: [-100, 0],
             outputRange: [1, 0]
         }),
     }
@@ -194,23 +197,37 @@ const Content = ({y, city}) => (
 
 const BasicInfo = ({city}) => (
     <View>
-        <Text style={{textAlign: 'center', color: '#333', fontSize: 14}}>
+        <Text style={styles.fontCityBlob}>
             {city.blob}
         </Text>
         <Stars rating = {city.rating} id = {city.id} />
     </View>
 )
 
-const Stars = ({rating, id}) => (
-    <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 2}}>
-        <Text style={{textAlign: 'center', color: '#333', fontSize: 12}}>
-            {`NO. ${id}`}
-        </Text>
-        <Text>
-            {`${rating} / 5`}
-        </Text>
-    </View>
-)
+const Stars = ({rating, id}) => {
+    return (
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2}}>
+            <Text style={{color: '#333', fontSize: 12}}>
+                {`NO. ${id}`}
+            </Text>
+            <View  style={{flexDirection: 'row'}}>
+                {[1,2,3,4,5].map(item => {
+                    if (item <= rating) {
+                        return (
+                            <Image key={'start',item}
+                                source={{uri: icons.starIconFull}} style={styles.starIcon} />
+                        )
+                    } else {
+                        return (
+                            <Image key={'start',item}
+                                source={{uri: icons.starIconOutline}} style={styles.starIcon} />
+                        )
+                    }
+                })}
+            </View>
+        </View>
+    )
+}
 
 const Users = ({users}) => (
     <View style={{flexDirection: 'row'}}>
@@ -249,30 +266,31 @@ const styles = StyleSheet.create({
     cardCoordinatesWrapper: {
         flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10
     },
-    locationIcon: {
+    locationIconFull: {
         width: 20, height: 20, resizeMode: 'contain', tintColor: 'white'
     },
     bottomCardBase: {
         position: 'absolute',
-        bottom: 0,
         borderRadius: 8,
         justifyContent: 'flex-end',
         overflow: 'hidden',
-        backgroundColor: 'white',
-        shadowColor: '#000',
-        shadowOffset: {width: 10, height: 10},
-        shadowOpacity: 0.4, shadowRadius: 8,
-
+        backgroundColor: 'seashell',
     },
     contentBase: {
-        height: 100,
+        height: 125,
         paddingVertical: 5, paddingHorizontal: 10,
         justifyContent: 'space-around'
+    },
+    fontCityBlob: {
+        textAlign: 'center', color: '#333', fontSize: 16,
+        paddingBottom: 5
     },
     avatarStyle: {
         width: 34, height: 34, borderRadius: 17, resizeMode: 'cover',
     },
-
+    starIcon: {
+        width: 20, height: 20, resizeMode: 'contain', tintColor: '#9297C8'
+    },
     fontCardTitle: {
         textAlign: 'center', color: 'white', fontSize: 22, letterSpacing: 2,
         textShadowOffset: {width: 3, height: 3}, textShadowColor: 'rgba(0,0,0,0.6)',

@@ -37,7 +37,6 @@ class App extends Component {
                     style={{}}
                     onChangeVisibleRows = {this.computeVisible.bind(this)}
                     contentContainerStyle = {{
-                        paddingTop: 50,
                         justifyContent: 'center', alignItems: 'center',
                     }}
                     showsHorizontalScrollIndicator = {false}
@@ -92,7 +91,7 @@ const Footer = ({index, count}) => (
     <View style = {styles.sceneFooter}>
         <View style={{paddingBottom: 10}}>
             <Text style={styles.fontFooterCounter}>
-                <Text style={{color: 'steelblue'}}>
+                <Text style={{color: '#9297C8'}}>
                     {`${parseInt(index, 10)+1}`}
                 </Text>
                 <Text>
@@ -129,7 +128,7 @@ const styles = StyleSheet.create({
     sceneFooter: {
         position: 'absolute', bottom: 0, width: width,
         justifyContent: 'center', alignItems: 'center',
-        paddingVertical: 10,
+        paddingVertical: 10, zIndex: 1
     },
     fontFooterCounter: {
         backgroundColor: 'transparent', color: 'white', fontSize: 18, fontWeight: '600'
