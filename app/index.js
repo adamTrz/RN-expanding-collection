@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {
-    Dimensions, Image, LayoutAnimation,
+    Animated, Dimensions, Image, LayoutAnimation,
     ListView, View, Text, StatusBar, StyleSheet
 } from 'react-native'
 import {
@@ -18,8 +18,10 @@ class App extends Component {
         const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
         this.state = {
             dataSource: ds.cloneWithRows(cities),
-            count: cities.length
+            count: cities.length,
+            animatedY: new Animated.Value(0)
         }
+        this.handleCardAnimation = this.handleCardAnimation.bind(this)
     }
 
     componentDidMount() {
@@ -27,7 +29,7 @@ class App extends Component {
     }
 
     render() {
-        const {dataSource, count, currentIndex, animating} = this.state
+        const {dataSource, count, currentIndex, animating, animatedY} = this.state
         return (
             <Components.LinearGradient
                 colors = {['#7D8185', '#9BAAB5']}
@@ -43,7 +45,7 @@ class App extends Component {
                     dataSource = {dataSource}
                     renderRow = {this.renderRow}
                 />
-                <Header />
+                <Header animatedY = {animatedY} />
                 <Footer index={currentIndex} count = {count} />
             </Components.LinearGradient>
         )
@@ -53,12 +55,19 @@ class App extends Component {
         return  (
             <Card city = {rowData}
                 animating = {this.animating.bind(this)}
+                animateMain = {this.handleCardAnimation}
                 />
             )
     }
 
     animating = (bool) => {
         this.setState({animating: bool})
+    }
+
+    handleCardAnimation = (animated) => {
+        const {x, y} = animated
+        this.state.animatedY.setValue(y)
+        // this.setState({animatedY: y})
     }
 
     computeVisible = (visibleRows, changedRows) => {
@@ -75,17 +84,33 @@ class App extends Component {
 
 export default App;
 
-const Header = () => (
-    <View style={styles.sceneHeader} >
-        <Image source={{uri: icons.magifyIcon}}
-            style={styles.headerIcon} />
-        <Text style={styles.fontHeader}>
-            TOFIND
-        </Text>
-        <Image source={{uri: icons.crosshairIcon}}
-            style={styles.headerIcon} />
-    </View>
-)
+const Header = ({animatedY}) => {
+    // const headerOpacity = (animatedY) => {
+    //     if (animatedY >= -130 || !animatedY) return {
+    //         opacity: 1
+    //     }
+    //     else if (animatedY >= -300) return {
+    //         opacity: animatedY*2/3-1
+    //     }
+    //     else return {opacity: 0}
+    // }
+    return (
+        <View style={styles.sceneHeader} >
+            <Image source={{uri: icons.magifyIcon}}
+                style={styles.headerIcon} />
+            <Animated.Text style={[styles.fontHeader, {
+                opacity: animatedY.interpolate({
+                    inputRange: [-350, -130, 0],
+                    outputRange: [0, 1, 1]
+                })
+            }]}>
+                TOFIND
+            </Animated.Text>
+            <Image source={{uri: icons.crosshairIcon}}
+                style={styles.headerIcon} />
+        </View>
+    )
+}
 
 const Footer = ({index, count}) => (
     <View style = {styles.sceneFooter}>

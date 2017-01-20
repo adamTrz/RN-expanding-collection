@@ -28,6 +28,7 @@ class Card extends React.Component {
 
     componentWillMount() {
         this.state.anim.addListener(value => this.state.animValue = value);
+        this.state.anim.addListener(this.props.animateMain);
         this._panResponder = PanResponder.create({
             onMoveShouldSetResponderCapture: () => true,
             onMoveShouldSetPanResponderCapture: () => true,
@@ -54,12 +55,9 @@ class Card extends React.Component {
         this.state.anim.flattenOffset()
         const {dx, dy} = gestureState
         // DY is reseted after _handleRelease!!!!!!!!
-        console.log(dy);
+        // console.log(dy);
         if (dy >= -25) this.goToBase() // going up from firstt base
         else {
-            console.log('_handleRelease, inner else:');
-            console.log(`base: ${this.state.base}`);
-            console.log(`first: ${this.state.first}`);
             if (this.state.base) {
                 this.goToFirst()
             }
@@ -74,7 +72,6 @@ class Card extends React.Component {
     }
 
     goToBase() {
-        console.log('goToBase');
         Animated.spring(this.state.anim, {
             toValue: 0
         }).start(() => {
@@ -84,7 +81,6 @@ class Card extends React.Component {
     }
 
     goToFirst() {
-        console.log('goToFirst');
         Animated.spring(this.state.anim, {
             toValue: {x: 0, y: -100}
         }).start(() => {
@@ -94,7 +90,6 @@ class Card extends React.Component {
     }
 
     goToSecond() {
-        console.log('goToSecond');
         Animated.spring(this.state.anim, {
             toValue: {x: 0, y: -350}
         }).start(() => {
