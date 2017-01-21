@@ -2,7 +2,7 @@ import React from 'react';
 import {
     Animated, Dimensions,
     Image, PanResponder,
-    ScrollView, StyleSheet, Text, View,
+    ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native'
 
 import { icons } from './constants'
@@ -137,7 +137,7 @@ class Card extends React.Component {
                 <View style={styles.cardShadow}>
                     <Animated.View style={[
                         styles.bottomCardBase, getBottomCardStyle(y)]}>
-                            <BasicInfo city = {city} />
+                            <BasicInfo city = {city} y={y} />
                             <Stars rating = {rating} id = {id} y={y} />
                             <Reviews y={y} reviews = {reviews} />
                             <Users reviews = {reviews} y={y} />
@@ -197,13 +197,18 @@ getBottomCardStyle = y => ({
 
 // COMPONENTS:
 
-const BasicInfo = ({city}) => (
-    <View style={styles.contentBase}>
+const BasicInfo = ({city, y}) => (
+    <Animated.View style={[styles.contentBase, {
+        borderBottomWidth: y.interpolate({
+            inputRange: tresholds,
+            outputRange: [1, 0, 0, 0],
+            extrapolate: 'clamp'
+        }), borderBottomColor: 'silver'
+    }]}>
         <Text style={styles.fontCityBlob}>
-            {/* // TODO: add animated bottom border */}
             &bdquo;{city.blob}&rdquo;
         </Text>
-    </View>
+    </Animated.View>
 )
 
 const Stars = ({rating, id, y}) => {
@@ -283,21 +288,16 @@ const Reviews = ({y, reviews}) => {
             }}>
             <ScrollView showsVerticalScrollIndicator={false}>
                 {reviews.map((review, idx) => (
-                    <Review key={'review',idx} review={review} idx = {idx}/>
+                    <Review key={'review',idx} review={review} />
                 ))}
             </ScrollView>
         </Animated.View>
     )
 }
 
-const Review = ({review, idx}) => {
-    const reviewBorderStyle = idx === 0 ? {
-        borderTopWidth: 1
-    } : {
-        borderTopWidth: 0
-    }
+const Review = ({review}) => {
     return (
-        <View style={[styles.reviewWrapper ,reviewBorderStyle]}>
+        <View style={styles.reviewWrapper}>
             <View style={styles.reviewHeaderWrapper}>
                 <View style={styles.reviewAvatarWrapper}>
                     <Image source = {{uri: review.userAvatar}}
@@ -308,12 +308,14 @@ const Review = ({review, idx}) => {
                         {review.userName}
                     </Text>
                     <Text style={styles.fontReviewTextDate}>
-                        date: {review.date}
+                        {review.date}
                     </Text>
                 </View>
-                <Image source={{uri: icons.thumbUpIcon}} style={styles.likeIcon} />
+                <TouchableOpacity>
+                    <Image source={{uri: icons.thumbUpIcon}} style={styles.likeIcon} />
+                </TouchableOpacity>
             </View>
-            <Text style={{fontSize: 16, color: 'darkslategrey'}} numberOfLines={5} >
+            <Text style={styles.fontReviewText} numberOfLines={5} >
                 {review.review}
             </Text>
 
@@ -368,7 +370,7 @@ const styles = StyleSheet.create({
     },
     fontCityBlob: {
         textAlign: 'center', color: 'darkslategrey', fontSize: 16,
-        paddingBottom: 5, fontStyle: 'italic', fontWeight: '200'
+        paddingBottom: 5, fontFamily: 'lato_italic'
     },
     avatarStyle: {
         width: 34, height: 34, borderRadius: 17, resizeMode: 'cover',
@@ -379,15 +381,15 @@ const styles = StyleSheet.create({
     fontCardTitle: {
         textAlign: 'center', color: 'white', fontSize: 22, letterSpacing: 2,
         textShadowOffset: {width: 3, height: 3}, textShadowColor: 'rgba(0,0,0,0.6)',
-        textShadowRadius: 4
+        textShadowRadius: 4, fontFamily: 'lato'
     },
     fontCardCoordinates: {
         color: 'white', fontSize: 16, letterSpacing: 1,
         textShadowOffset: {width: 2, height: 2}, textShadowColor: 'rgba(0,0,0,0.6)',
-        textShadowRadius: 4, width: cardBaseWidth/3
+        textShadowRadius: 4, width: cardBaseWidth/3, fontFamily: 'lato_light'
     },
     reviewWrapper: {
-        borderColor: 'silver', borderWidth: 1,
+        borderBottomColor: 'silver', borderBottomWidth: 1,
         justifyContent: 'center',
         paddingHorizontal: 20, paddingVertical: 15,
     },
@@ -407,10 +409,14 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end', marginHorizontal: 20
     },
     fontReviewTextName: {
-        fontSize: 18, color: 'grey'
+        fontSize: 18, color: 'grey', fontFamily: 'lato'
     },
     fontReviewTextDate: {
-        fontSize: 14, color: 'grey'
+        fontSize: 14, color: 'grey', fontFamily: 'lato_light'
+    },
+    fontReviewText: {
+        fontSize: 16, color: 'darkslategrey',
+        fontFamily: 'lato_light'
     },
     likeIcon: {
         width: 20, height: 20, resizeMode: 'contain', tintColor: 'grey'

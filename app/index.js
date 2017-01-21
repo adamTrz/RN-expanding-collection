@@ -4,7 +4,7 @@ import {
     ListView, View, Text, StatusBar, StyleSheet
 } from 'react-native'
 import {
-  Components
+  Components, Font
 } from 'exponent';
 
 import Card from './Card'
@@ -17,6 +17,7 @@ class App extends Component {
         super(props);
         const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2})
         this.state = {
+            loaded: false,
             dataSource: ds.cloneWithRows(cities),
             count: cities.length,
             animatedY: new Animated.Value(0)
@@ -24,12 +25,19 @@ class App extends Component {
         this.handleCardAnimation = this.handleCardAnimation.bind(this)
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         StatusBar.setHidden(true)
+        await Font.loadAsync({
+            'lato': require('./assets/LatoRegular.ttf'),
+            'lato_light': require('./assets/LatoLight.ttf'),
+            'lato_italic': require('./assets/LatoLightItalic.ttf')
+        })
+        this.setState({loaded: true})
     }
 
     render() {
-        const {dataSource, count, currentIndex, disableScroll, animatedY} = this.state
+        const {dataSource, count, currentIndex, disableScroll, animatedY, loaded} = this.state
+        if (!loaded) return <Components.AppLoading />
         return (
             <Components.LinearGradient
                 colors = {['#7D8185', '#9BAAB5']}
@@ -140,7 +148,7 @@ const styles = StyleSheet.create({
     },
     fontHeader: {
         color: 'white', textAlign: 'center', fontWeight: '600',
-         flex: 6,
+        flex: 6, fontFamily: 'lato'
     },
     headerIcon: {
         width: 20, height: 20,
@@ -152,7 +160,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10, zIndex: 1
     },
     fontFooterCounter: {
-        backgroundColor: 'transparent', color: 'white', fontSize: 18, fontWeight: '600'
+        backgroundColor: 'transparent', color: 'white', fontSize: 18, fontFamily: 'lato'
     },
     footerIconsWrapper: {
         flexDirection: 'row', justifyContent: 'space-around',
