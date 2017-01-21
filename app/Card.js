@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     fontCardCoordinates: {
         color: 'white', fontSize: 16, letterSpacing: 1,
         textShadowOffset: {width: 2, height: 2}, textShadowColor: 'rgba(0,0,0,0.6)',
-        textShadowRadius: 4, width: cardBaseWidth/3, fontFamily: 'lato_light'
+        textShadowRadius: 4, width: cardBaseWidth/3, fontFamily: 'lato'
     },
     reviewWrapper: {
         borderBottomColor: 'silver', borderBottomWidth: 1,

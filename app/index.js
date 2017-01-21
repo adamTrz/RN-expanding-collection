@@ -4,13 +4,28 @@ import {
     ListView, View, Text, StatusBar, StyleSheet
 } from 'react-native'
 import {
-  Components, Font
+  Asset, Components, Font
 } from 'exponent';
 
 import Card from './Card'
 import {icons, cities} from './constants'
 
 const {width, height} = Dimensions.get('window')
+
+const cacheImages = images => {
+  return images.map(image => {
+    if (typeof image === 'string') {
+      return Image.prefetch(image);
+    } else {
+      return Asset.fromModule(image).downloadAsync();
+    }
+  })
+}
+
+const cacheFonts = fonts => {
+  return fonts.map(font => Font.loadAsync(font));
+}
+
 
 class App extends Component {
     constructor(props) {
@@ -25,13 +40,24 @@ class App extends Component {
         this.handleCardAnimation = this.handleCardAnimation.bind(this)
     }
 
-    async componentDidMount() {
+    componentWillMount() {
         StatusBar.setHidden(true)
-        await Font.loadAsync({
-            'lato': require('./assets/LatoRegular.ttf'),
-            'lato_light': require('./assets/LatoLight.ttf'),
-            'lato_italic': require('./assets/LatoLightItalic.ttf')
-        })
+        this.loadAssetsAsync()
+    }
+
+    async loadAssetsAsync() {
+        const imageAssets = cacheImages(
+            cities.map(city => city.img)
+        )
+        const fontAssets = cacheFonts([
+            {'lato': require('./assets/LatoRegular.ttf')},
+            {'lato_light': require('./assets/LatoLight.ttf')},
+            {'lato_italic': require('./assets/LatoLightItalic.ttf')}
+        ])
+        await Promise.all([
+            ...imageAssets,
+            ...fontAssets,
+        ]);
         this.setState({loaded: true})
     }
 
@@ -40,7 +66,7 @@ class App extends Component {
         if (!loaded) return <Components.AppLoading />
         return (
             <Components.LinearGradient
-                colors = {['#7D8185', '#9BAAB5']}
+                colors = {['lightslategrey', 'lightsteelblue']}
                 style = {[styles.scene]}>
                 <ListView horizontal pagingEnabled
                     scrollEnabled={!disableScroll}
