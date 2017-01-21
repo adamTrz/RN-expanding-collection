@@ -13,6 +13,7 @@ const cardBaseWidth = width*0.7
 const cardFinalHeight = 130
 const topY = -(height - cardBaseHeight)+cardFinalHeight/2-30-5
     //diff between cardHeight and hegih of device minus final card height and fake header from index.js. Roughly :)
+const tresholds = [ topY, -125, -100, 0 ]
 
 class Card extends React.Component {
 
@@ -27,9 +28,7 @@ class Card extends React.Component {
             second: false
         }
         this._handleRelease = this._handleRelease.bind(this);
-        this.goToBase = this.goToBase.bind(this);
-        this.goToFirst = this.goToFirst.bind(this);
-        // this.goToThirdBase = this.goToThirdBase.bind(this);
+        this.goTo = this.goTo.bind(this);
     }
 
     componentWillMount() {
@@ -43,7 +42,7 @@ class Card extends React.Component {
                     x: this.state.animValue.x, y: this.state.animValue.y
                 })
                 this.state.anim.setValue({x: 0, y: 0});
-                this.props.animating(true)
+                this.props.disableScroll(true)
             },
             onPanResponderMove: Animated.event([
                 null, {dy: this.state.anim.y}
@@ -60,53 +59,51 @@ class Card extends React.Component {
     _handleRelease(e, gestureState) {
         this.state.anim.flattenOffset()
         const {dx, dy} = gestureState
-        // DY is reseted after _handleRelease!!!!!!!!
-        // console.log(dy);
-        if (dy >= -25) this.goToBase() // going up from firstt base
-        else {
-            if (this.state.base) {
-                this.goToFirst()
-            }
-            else if (this.state.first) {
-                this.goToSecond()
-            }
-        //     else {
-        //         this.goToThirdBase()
-        //     }
+        const {base, first, second} = this.state
+        // if @base
+        if (base) {
+            if (dy >= -25) this.goTo('base')
+            else if (dy <= -125) this.goTo('second')
+            else this.goTo('first')
         }
-        this.props.animating(false)
+        else if (first) {
+            if (dy < 0 && dy >= -25) this.goTo('second')
+            else if (dy > 0) this.goTo('base')
+            else this.goTo('second')
+        }
+        else {
+            if (dy < 0) this.goTo('second')
+            else this.goTo('base')
+        }
     }
 
-    goToBase() {
+    goTo = where => {
+        let to = {x: 0, y: 0}
+        let base = true, first = false, second = false
+        let dragOff = false
+        switch (where) {
+            case 'first':
+                to = {x: 0, y: -100}
+                base = false, first = true, second = false
+                dragOff = false
+                break;
+            case 'second':
+                to = {x: 0, y: topY}
+                base = false, first = false, second = true
+                dragOff = true
+                break;
+        }
         Animated.spring(this.state.anim, {
-            toValue: 0
+            toValue: to, friction: 10,
         }).start(() => {
-            this.setState({base: true, first: false})
-            // this.props.animating(false)
-        })
-    }
-
-    goToFirst() {
-        Animated.timing(this.state.anim, {
-            toValue: {x: 0, y: -100}, duration: 300
-        }).start(() => {
-            this.setState({first: true, second: false, base: false})
-            this.props.animating(false)
-        })
-    }
-
-    goToSecond() {
-        Animated.timing(this.state.anim, {
-            toValue: {x: 0, y: topY}, duration: 800
-        }).start(() => {
-            this.setState({secondBase: false, thirdBase: true})
-            this.props.animating(true)
+            this.setState({base, first, second})
+            this.props.disableScroll(dragOff)
         })
     }
 
     render() {
         const { city } = this.props
-        const { name, img, blob, rating, users, coordinates } = city
+        const { name, img, blob, rating, reviews, id, coordinates } = city
         const { y } = this.state.anim
         return (
             <View
@@ -136,13 +133,15 @@ class Card extends React.Component {
                                 </Text>
                             </View>
                         </View>
-
                     </Animated.Image>
                 </Animated.View>
                 <View style={styles.cardShadow}>
                     <Animated.View style={[
                         styles.bottomCardBase, getBottomCardStyle(y)]}>
-                            <Content y = {y} city = {city} />
+                            <BasicInfo city = {city} />
+                            <Stars rating = {rating} id = {id} y={y} />
+                            <Comments y={y} reviews = {reviews} />
+                            <Users reviews = {reviews} y={y} />
                     </Animated.View>
                 </View>
             </View>
@@ -152,116 +151,161 @@ class Card extends React.Component {
 
 export default Card;
 
-const tresholds = [ topY, -125, -100, 0 ]
+getBaseCardStyle = y => ({
+    width: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [width, cardBaseWidth, cardBaseWidth, cardBaseWidth],
+        extrapolate: 'clamp'
+    }),
+    height: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [cardFinalHeight, cardBaseHeight, cardBaseHeight, cardBaseHeight],
+        extrapolate: 'clamp'
+    }),
+    borderRadius: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [0, 8, 8, 8],
+        extrapolate: 'clamp'
+    })
+})
 
-getBaseCardStyle = y => {
-    return {
-        width: y.interpolate({
-            inputRange: tresholds,
-            outputRange: [width, cardBaseWidth, cardBaseWidth, cardBaseWidth],
-            extrapolate: 'clamp'
-        }),
-        height: y.interpolate({
-            inputRange: tresholds,
-            outputRange: [cardFinalHeight, cardBaseHeight, cardBaseHeight, cardBaseHeight],
-            extrapolate: 'clamp'
-        }),
-        borderRadius: y.interpolate({
-            inputRange: tresholds,
-            outputRange: [0, 8, 8, 8],
-            extrapolate: 'clamp'
-        })
-    }
-}
-
-getBottomCardStyle = y => {
-    return {
-        left: y.interpolate({
-            inputRange: tresholds,
-            outputRange: [-width/2, -width*0.9/2, -width*0.8/2, -cardBaseWidth/2],
-            extrapolate: 'clamp'
-        }),
-        top: y.interpolate({
-            inputRange: tresholds,
-            outputRange: [-cardBaseHeight, -cardBaseHeight, -cardBaseHeight, -cardBaseHeight],
-            extrapolate: 'clamp'
-        }),
-        width: y.interpolate({
-            inputRange: tresholds,
-            outputRange: [width, width*0.9, width*0.8, cardBaseWidth],
-            extrapolate: 'clamp'
-        }),
-        height: y.interpolate({
-            inputRange: tresholds,
-            outputRange: [height-30, height*0.75, height*0.62, cardBaseHeight],
-            extrapolate: 'clamp'
-        }),
-        opacity: y.interpolate({
-            inputRange: [-100, 0],
-            outputRange: [1, 0]
-        }),
-
-    }
-}
-
-getContentStyle = y => {
-    return {
-    }
-}
-
+getBottomCardStyle = y => ({
+    left: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [-width/2, -width*0.9/2, -width*0.8/2, -cardBaseWidth/2],
+        extrapolate: 'clamp'
+    }),
+    top: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [-cardBaseHeight, -cardBaseHeight, -cardBaseHeight, -cardBaseHeight],
+        extrapolate: 'clamp'
+    }),
+    width: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [width, width*0.9, width*0.8, cardBaseWidth],
+        extrapolate: 'clamp'
+    }),
+    height: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [height-30, height*0.75, height*0.62, cardBaseHeight],
+        extrapolate: 'clamp'
+    }),
+    opacity: y.interpolate({
+        inputRange: [-100, 0],
+        outputRange: [1, 0]
+    })
+})
 
 // COMPONENTS:
 
-const Content = ({y, city}) => (
-    <Animated.View style={[styles.contentBase, getContentStyle(y)]} >
-        <BasicInfo city = {city} />
-        <Users users = {city.users} />
-    </Animated.View>
-)
-
 const BasicInfo = ({city}) => (
-    <View>
+    <View style={styles.contentBase}>
         <Text style={styles.fontCityBlob}>
             {city.blob}
         </Text>
-        <Stars rating = {city.rating} id = {city.id} />
     </View>
 )
 
-const Stars = ({rating, id}) => {
+const Stars = ({rating, id, y}) => {
     return (
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2}}>
+        <Animated.View style={[styles.starsContainer, getStarsStyle(y)]}>
             <Text style={{color: '#333', fontSize: 12}}>
                 {`NO. ${id}`}
             </Text>
             <View  style={{flexDirection: 'row'}}>
                 {[1,2,3,4,5].map(item => {
-                    if (item <= rating) {
-                        return (
-                            <Image key={'start',item}
-                                source={{uri: icons.starIconFull}} style={styles.starIcon} />
-                        )
-                    } else {
-                        return (
-                            <Image key={'start',item}
-                                source={{uri: icons.starIconOutline}} style={styles.starIcon} />
-                        )
-                    }
+                    if (item <= rating) return (
+                        <Image key={'start',item}
+                            source={{uri: icons.starIconFull}} style={styles.starIcon} />
+                    )
+                    else return (
+                        <Image key={'start',item}
+                            source={{uri: icons.starIconOutline}} style={styles.starIcon} />
+                    )
                 })}
             </View>
-        </View>
+        </Animated.View>
     )
 }
 
-const Users = ({users}) => (
-    <View style={{flexDirection: 'row'}}>
-        {users.map((user, idx) => (
+getStarsStyle = y => ({
+    height: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [0, 0, 20, 20],
+        extrapolate: 'clamp'
+    }),
+    opacity: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [0, 0, 1, 1],
+        extrapolate: 'clamp'
+    })
+})
+
+const Users = ({reviews, y}) => (
+    <Animated.View style={[{
+        flexDirection: 'row', paddingHorizontal: 20}, getUsersStyle(y) ]}>
+        {reviews.map((review, idx) => (
                 <Image key = {'avatar',idx}
-                    source={{uri: user.avatar}}
+                    source={{uri: review.userAvatar}}
                     style={[{transform: [{translateX: -6*idx}]}, styles.avatarStyle]} />
         ))}
-    </View>
+    </Animated.View>
 )
+
+getUsersStyle = y => ({
+    height: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [0, 0, 30, 30],
+        extrapolate: 'clamp'
+    }),
+    opacity: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [0, 0, 1, 1],
+        extrapolate: 'clamp'
+    }),
+    marginVertical: y.interpolate({
+        inputRange: tresholds,
+        outputRange: [0, 0, 20, 20],
+        extrapolate: 'clamp'
+    })
+})
+
+const Comments = ({y, reviews}) => {
+    return (
+        <Animated.View
+            style={{
+                width: width,
+                height: y.interpolate({
+                    inputRange: [ topY, -200, -125, -100, 0 ],
+                    outputRange: [height-cardFinalHeight-50, height-cardFinalHeight-40,0, 0, 0],
+                    extrapolate: 'clamp'
+                }),
+            }}>
+            <ScrollView>
+                {reviews.map((review, idx) => (
+                    <View key = {'review',idx} style={{
+                        borderColor: 'red', borderWidth: 1, justifyContent: 'center'
+                    }}>
+                        <View style={{flexDirection: 'row'}}>
+                            <Image source = {{uri: review.userAvatar}}
+                                style={{width: 50, height: 50, resizeMode: 'contain'}}
+                                />
+                            <View>
+                                <Text>
+                                    {review.userName}
+                                </Text>
+                            </View>
+                        </View>
+                        <Text>
+                            {review.review}
+                        </Text>
+
+                    </View>
+                ))}
+            </ScrollView>
+        </Animated.View>
+    )
+}
 
 const styles = StyleSheet.create({
     cardShadow: {
@@ -275,7 +319,8 @@ const styles = StyleSheet.create({
         width: width
     },
     animationWrap: {
-        width: width, justifyContent: 'center', alignItems: 'center',
+        width: cardBaseWidth,
+        justifyContent: 'center', alignItems: 'center',
         backgroundColor: 'transparent',
         zIndex: 10
     },
@@ -300,9 +345,13 @@ const styles = StyleSheet.create({
         backgroundColor: 'seashell',
     },
     contentBase: {
-        height: 125,
-        paddingVertical: 5, paddingHorizontal: 10,
-        justifyContent: 'space-around'
+        height: 50, paddingTop: 10,
+        paddingTop: 0, paddingHorizontal: 20,
+        justifyContent: 'center'
+    },
+    starsContainer: {
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        marginTop: 2, paddingHorizontal: 20,
     },
     fontCityBlob: {
         textAlign: 'center', color: '#333', fontSize: 16,

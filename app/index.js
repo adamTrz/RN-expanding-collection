@@ -29,13 +29,13 @@ class App extends Component {
     }
 
     render() {
-        const {dataSource, count, currentIndex, animating, animatedY} = this.state
+        const {dataSource, count, currentIndex, disableScroll, animatedY} = this.state
         return (
             <Components.LinearGradient
                 colors = {['#7D8185', '#9BAAB5']}
                 style = {[styles.scene]}>
                 <ListView horizontal pagingEnabled
-                    scrollEnabled={!animating}
+                    scrollEnabled={!disableScroll}
                     style={{}}
                     onChangeVisibleRows = {this.computeVisible.bind(this)}
                     contentContainerStyle = {{
@@ -56,20 +56,19 @@ class App extends Component {
     renderRow = (rowData: string, sectionID: number, rowID: number) => {
         return  (
             <Card city = {rowData}
-                animating = {this.animating.bind(this)}
+                disableScroll = {this.disableScroll.bind(this)}
                 animateMain = {this.handleCardAnimation}
                 />
             )
     }
 
-    animating = (bool) => {
-        this.setState({animating: bool})
+    disableScroll = (bool) => {
+        this.setState({disableScroll: bool})
     }
 
     handleCardAnimation = (animated) => {
         const {x, y} = animated
         this.state.animatedY.setValue(y)
-        // this.setState({animatedY: y})
     }
 
     computeVisible = (visibleRows, changedRows) => {
