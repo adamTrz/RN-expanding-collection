@@ -126,9 +126,8 @@ class Card extends React.Component {
                                     {coordinates[0]}
                                 </Text>
                                 <Image source={{uri: icons.locationIconFull}}
-                                    style={styles.locationIconFull}
-                                    />
-                                <Text style={styles.fontCardCoordinates}>
+                                    style={styles.locationIconFull} />
+                                <Text style={[styles.fontCardCoordinates, {textAlign: 'right'}]}>
                                     {coordinates[1]}
                                 </Text>
                             </View>
@@ -140,7 +139,7 @@ class Card extends React.Component {
                         styles.bottomCardBase, getBottomCardStyle(y)]}>
                             <BasicInfo city = {city} />
                             <Stars rating = {rating} id = {id} y={y} />
-                            <Comments y={y} reviews = {reviews} />
+                            <Reviews y={y} reviews = {reviews} />
                             <Users reviews = {reviews} y={y} />
                     </Animated.View>
                 </View>
@@ -201,7 +200,8 @@ getBottomCardStyle = y => ({
 const BasicInfo = ({city}) => (
     <View style={styles.contentBase}>
         <Text style={styles.fontCityBlob}>
-            {city.blob}
+            {/* // TODO: add animated bottom border */}
+            &bdquo;{city.blob}&rdquo;
         </Text>
     </View>
 )
@@ -270,7 +270,7 @@ getUsersStyle = y => ({
     })
 })
 
-const Comments = ({y, reviews}) => {
+const Reviews = ({y, reviews}) => {
     return (
         <Animated.View
             style={{
@@ -279,34 +279,47 @@ const Comments = ({y, reviews}) => {
                     inputRange: [ topY, -200, -125, -100, 0 ],
                     outputRange: [height-cardFinalHeight-50, height-cardFinalHeight-40,0, 0, 0],
                     extrapolate: 'clamp'
-                }),
+                })
             }}>
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
                 {reviews.map((review, idx) => (
-                    <View key = {'review',idx} style={{
-                        borderColor: 'red', borderWidth: 1, justifyContent: 'center'
-                    }}>
-                        <View style={{flexDirection: 'row'}}>
-                            <Image source = {{uri: review.userAvatar}}
-                                style={{width: 50, height: 50, resizeMode: 'contain'}}
-                                />
-                            <View>
-                                <Text>
-                                    {review.userName}
-                                </Text>
-                            </View>
-                        </View>
-                        <Text>
-                            {review.review}
-                        </Text>
-
-                    </View>
+                    <Review key={'review',idx} review={review} idx = {idx}/>
                 ))}
             </ScrollView>
         </Animated.View>
     )
 }
 
+const Review = ({review, idx}) => {
+    const reviewBorderStyle = idx === 0 ? {
+        borderTopWidth: 1
+    } : {
+        borderTopWidth: 0
+    }
+    return (
+        <View style={[styles.reviewWrapper ,reviewBorderStyle]}>
+            <View style={styles.reviewHeaderWrapper}>
+                <View style={styles.reviewAvatarWrapper}>
+                    <Image source = {{uri: review.userAvatar}}
+                        style={styles.reviewAvatar} />
+                </View>
+                <View style={styles.reviewHeaderTextsWrapper}>
+                    <Text style={styles.fontReviewTextName}>
+                        {review.userName}
+                    </Text>
+                    <Text style={styles.fontReviewTextDate}>
+                        date: {review.date}
+                    </Text>
+                </View>
+                <Image source={{uri: icons.thumbUpIcon}} style={styles.likeIcon} />
+            </View>
+            <Text style={{fontSize: 16, color: 'darkslategrey'}} numberOfLines={5} >
+                {review.review}
+            </Text>
+
+        </View>
+    )
+}
 const styles = StyleSheet.create({
     cardShadow: {
         shadowColor: '#000',
@@ -354,8 +367,8 @@ const styles = StyleSheet.create({
         marginTop: 2, paddingHorizontal: 20,
     },
     fontCityBlob: {
-        textAlign: 'center', color: '#333', fontSize: 16,
-        paddingBottom: 5
+        textAlign: 'center', color: 'darkslategrey', fontSize: 16,
+        paddingBottom: 5, fontStyle: 'italic', fontWeight: '200'
     },
     avatarStyle: {
         width: 34, height: 34, borderRadius: 17, resizeMode: 'cover',
@@ -371,7 +384,36 @@ const styles = StyleSheet.create({
     fontCardCoordinates: {
         color: 'white', fontSize: 16, letterSpacing: 1,
         textShadowOffset: {width: 2, height: 2}, textShadowColor: 'rgba(0,0,0,0.6)',
-        textShadowRadius: 4
+        textShadowRadius: 4, width: cardBaseWidth/3
+    },
+    reviewWrapper: {
+        borderColor: 'silver', borderWidth: 1,
+        justifyContent: 'center',
+        paddingHorizontal: 20, paddingVertical: 15,
+    },
+    reviewHeaderWrapper: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        paddingBottom: 5,
+    },
+    reviewAvatarWrapper: {
+        shadowColor: '#000', shadowOffset: {width: 2, height: 2},
+        shadowOpacity: 0.4, shadowRadius: 2, borderRadius: 25
+    },
+    reviewAvatar: {
+        width: 50, height: 50, resizeMode: 'contain', borderRadius: 25
+    },
+    reviewHeaderTextsWrapper: {
+        flex: 1, flexDirection: 'row', justifyContent: 'space-between',
+        alignItems: 'flex-end', marginHorizontal: 20
+    },
+    fontReviewTextName: {
+        fontSize: 18, color: 'grey'
+    },
+    fontReviewTextDate: {
+        fontSize: 14, color: 'grey'
+    },
+    likeIcon: {
+        width: 20, height: 20, resizeMode: 'contain', tintColor: 'grey'
     },
 
 })
