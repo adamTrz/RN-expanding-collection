@@ -40,7 +40,7 @@ const cities = [
                 date: 'MAR 23rd'
             }
         ],
-        coordinates: ['40° North', '74° West']
+        coordinates: ['40.785091', 'North', '-73.968285', 'West']
     },
     {
         id: '32164893',
@@ -71,12 +71,12 @@ const cities = [
                 date: 'NOV 19th'
             } , {
                 userName: 'Paul Stenton',
-                userAvatar: 'https://randomuser.me/api/portraits/women/88.jpg',
+                userAvatar: 'https://randomuser.me/api/portraits/men/88.jpg',
                 review: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis...',
                 date: 'JUL 30th'
             }
         ],
-        coordinates: ['51° North', '0° West']
+        coordinates: ['51.509865', 'North', '-0.118092', 'West']
     },
     {
         id: '65465654',
@@ -112,7 +112,7 @@ const cities = [
                 date: 'SEP 16th'
             }
         ],
-        coordinates: ['33° South', '151° East']
+        coordinates: ['-33.865143', 'South', '151.209900', 'East']
     },
     {
         id: '564541131',
@@ -143,7 +143,7 @@ const cities = [
                 date: 'JAN 1st',
             }
         ],
-        coordinates: ['48° North', '2° East']
+        coordinates: ['48.858093', 'North', '2.294694', 'East']
     },
     {
         id: '5645645643',
@@ -174,7 +174,7 @@ const cities = [
                 date: 'MAY 20th'
             }
         ],
-        coordinates: ['55° North', '37° East']
+        coordinates: ['55.751244', 'North', '37.618423', 'East']
     },
 ]
 

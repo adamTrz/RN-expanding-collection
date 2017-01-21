@@ -70,7 +70,6 @@ class App extends Component {
                 style = {[styles.scene]}>
                 <ListView horizontal pagingEnabled
                     scrollEnabled={!disableScroll}
-                    style={{}}
                     onChangeVisibleRows = {this.computeVisible.bind(this)}
                     contentContainerStyle = {{
                         justifyContent: 'center', alignItems: 'center',

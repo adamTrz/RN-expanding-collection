@@ -4,6 +4,7 @@ import {
     Image, PanResponder,
     ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native'
+import {Components} from 'exponent'
 
 import { icons } from './constants'
 const {width, height} = Dimensions.get('window')
@@ -110,7 +111,12 @@ class Card extends React.Component {
                 style={styles.wrapper}>
                 <Animated.View style={[
                     styles.cardShadow, styles.animationWrap, {
-                        transform: [{translateY: y}]
+                        // transform: [{translateY: y}]
+                        transform: [{translateY: y.interpolate({
+                            inputRange: tresholds,
+                            outputRange: [ topY, -125, -100, 0 ],
+                            extrapolate: 'clamp'
+                        })}]
                     }]}
                     {...this._panResponder.panHandlers}
                     >
@@ -123,12 +129,12 @@ class Card extends React.Component {
                             </Text>
                             <View style={styles.cardCoordinatesWrapper}>
                                 <Text style={styles.fontCardCoordinates}>
-                                    {coordinates[0]}
+                                    {`${Math.abs(parseInt(coordinates[0]))} ${coordinates[1]}`}
                                 </Text>
                                 <Image source={{uri: icons.locationIconFull}}
                                     style={styles.locationIconFull} />
                                 <Text style={[styles.fontCardCoordinates, {textAlign: 'right'}]}>
-                                    {coordinates[1]}
+                                    {`${Math.abs(parseInt(coordinates[2]))} ${coordinates[3]}`}
                                 </Text>
                             </View>
                         </View>
@@ -139,6 +145,7 @@ class Card extends React.Component {
                         styles.bottomCardBase, getBottomCardStyle(y)]}>
                             <BasicInfo city = {city} y={y} />
                             <Stars rating = {rating} id = {id} y={y} />
+                            <ReviewsHeader y={y} coordinates={coordinates} />
                             <Reviews y={y} reviews = {reviews} />
                             <Users reviews = {reviews} y={y} />
                     </Animated.View>
@@ -198,13 +205,7 @@ getBottomCardStyle = y => ({
 // COMPONENTS:
 
 const BasicInfo = ({city, y}) => (
-    <Animated.View style={[styles.contentBase, {
-        borderBottomWidth: y.interpolate({
-            inputRange: tresholds,
-            outputRange: [1, 0, 0, 0],
-            extrapolate: 'clamp'
-        }), borderBottomColor: 'silver'
-    }]}>
+    <Animated.View style={styles.contentBase}>
         <Text style={styles.fontCityBlob}>
             &bdquo;{city.blob}&rdquo;
         </Text>
@@ -279,14 +280,23 @@ const Reviews = ({y, reviews}) => {
     return (
         <Animated.View
             style={{
-                width: width,
+                width: y.interpolate({
+                    inputRange: tresholds,
+                    outputRange: [width, width*0.9, width*0.8, cardBaseWidth],
+                    extrapolate: 'clamp'
+                }),
                 height: y.interpolate({
-                    inputRange: [ topY, -200, -125, -100, 0 ],
-                    outputRange: [height-cardFinalHeight-50, height-cardFinalHeight-40,0, 0, 0],
+                    inputRange: [ topY, -125, -100, 0 ],
+                    outputRange: [height-cardFinalHeight-140, height-height*0.62-140, 0, 0],
+                    extrapolate: 'clamp'
+                }),
+                opacity: y.interpolate({
+                    inputRange: tresholds,
+                    outputRange: [1,1,0,0],
                     extrapolate: 'clamp'
                 })
             }}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView showsVerticalScrollIndicator={false} >
                 {reviews.map((review, idx) => (
                     <Review key={'review',idx} review={review} />
                 ))}
@@ -322,6 +332,32 @@ const Review = ({review}) => {
         </View>
     )
 }
+
+const ReviewsHeader = ({y, coordinates}) => (
+    <Animated.View style={{
+        height: y.interpolate({
+            inputRange: tresholds,
+            outputRange: [100, 0 ,0, 0],
+            extrapolate: 'clamp'
+        }),
+        width: y.interpolate({
+            inputRange: tresholds,
+            outputRange: [width, width*0.9, width*0.8, cardBaseWidth],
+            extrapolate: 'clamp'
+        }),
+        }}>
+        <Components.MapView.Animated
+            style={styles.map}
+            initialRegion={{
+                latitude: parseFloat(coordinates[0], 10),
+                longitude: parseFloat(coordinates[2], 10),
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            }}
+        />
+    </Animated.View>
+)
+
 const styles = StyleSheet.create({
     cardShadow: {
         shadowColor: '#000',
@@ -360,7 +396,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'seashell',
     },
     contentBase: {
-        height: 50, paddingTop: 10,
+        height: 40, paddingTop: 7,
         paddingTop: 0, paddingHorizontal: 20,
         justifyContent: 'center'
     },
@@ -421,5 +457,359 @@ const styles = StyleSheet.create({
     likeIcon: {
         width: 20, height: 20, resizeMode: 'contain', tintColor: 'grey'
     },
-
+    map: {
+        ...StyleSheet.absoluteFillObject
+    }
 })
+
+const mapStyle = [
+  {
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#f5f5f5"
+      },
+      {
+        "visibility": "simplified"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.icon",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#616161"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#f5f5f5"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#bdbdbd"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#eeeeee"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#757575"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#e5e5e5"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9e9e9e"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#ffffff"
+      }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#757575"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dadada"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#616161"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9e9e9e"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.line",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#e5e5e5"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#eeeeee"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#c9c9c9"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9e9e9e"
+      }
+    ]
+  }
+]
+
+const customStyle = [
+  {
+    elementType: 'geometry',
+    stylers: [
+      {
+        color: '#242f3e',
+      },
+    ],
+  },
+  {
+    elementType: 'labels.text.fill',
+    stylers: [
+      {
+        color: '#746855',
+      },
+    ],
+  },
+  {
+    elementType: 'labels.text.stroke',
+    stylers: [
+      {
+        color: '#242f3e',
+      },
+    ],
+  },
+  {
+    featureType: 'administrative.locality',
+    elementType: 'labels.text.fill',
+    stylers: [
+      {
+        color: '#d59563',
+      },
+    ],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'labels.text.fill',
+    stylers: [
+      {
+        color: '#d59563',
+      },
+    ],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'geometry',
+    stylers: [
+      {
+        color: '#263c3f',
+      },
+    ],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'labels.text.fill',
+    stylers: [
+      {
+        color: '#6b9a76',
+      },
+    ],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [
+      {
+        color: '#38414e',
+      },
+    ],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry.stroke',
+    stylers: [
+      {
+        color: '#212a37',
+      },
+    ],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.text.fill',
+    stylers: [
+      {
+        color: '#9ca5b3',
+      },
+    ],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [
+      {
+        color: '#746855',
+      },
+    ],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry.stroke',
+    stylers: [
+      {
+        color: '#1f2835',
+      },
+    ],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'labels.text.fill',
+    stylers: [
+      {
+        color: '#f3d19c',
+      },
+    ],
+  },
+  {
+    featureType: 'transit',
+    elementType: 'geometry',
+    stylers: [
+      {
+        color: '#2f3948',
+      },
+    ],
+  },
+  {
+    featureType: 'transit.station',
+    elementType: 'labels.text.fill',
+    stylers: [
+      {
+        color: '#d59563',
+      },
+    ],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [
+      {
+        color: '#17263c',
+      },
+    ],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [
+      {
+        color: '#515c6d',
+      },
+    ],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.stroke',
+    stylers: [
+      {
+        color: '#17263c',
+      },
+    ],
+  },
+];
