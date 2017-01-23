@@ -68,6 +68,7 @@ class App extends Component {
                 colors = {['lightslategrey', 'lightsteelblue']}
                 style = {[styles.scene]}>
                 <ListView horizontal pagingEnabled
+                    ref = {ref => this.scrollView = ref}
                     scrollEnabled={!disableScroll}
                     onChangeVisibleRows = {this.computeVisible.bind(this)}
                     contentContainerStyle = {{
@@ -90,7 +91,6 @@ class App extends Component {
             <Card city = {rowData}
                 disableScroll = {this.disableScroll.bind(this)}
                 animateMain = {this.handleCardAnimation}
-                scrollTo = {this.scrollTo}
                 />
             )
     }
@@ -100,12 +100,8 @@ class App extends Component {
     }
 
     handleCardAnimation = (animated) => {
-        const {x, y} = animated
+        const {y} = animated
         this.state.animatedY.setValue(y)
-    }
-
-    scrollTo = (x) => {
-        console.log('scroll to: ',x);
     }
 
     computeVisible = (visibleRows, changedRows) => {

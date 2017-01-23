@@ -133,7 +133,7 @@ class Card extends React.Component {
                         style={[styles.cardBase, getBaseCardStyle(y)]}
                         >
                         <TouchableOpacity activeOpacity={0.9} onPress={this.handlePress}
-                            style={styles.map}>
+                            style={styles.absoluteFill}>
                             <View style={styles.cardTextsWrapper}>
                                 <Text style={styles.fontCardTitle}>
                                     {name.toUpperCase()}
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
         textShadowOffset: {width: 2, height: 2}, textShadowColor: 'rgba(0,0,0,0.6)',
         textShadowRadius: 4, width: cardBaseWidth/3, fontFamily: 'lato'
     },
-    map: {
+    absoluteFill: {
         ...StyleSheet.absoluteFillObject
     }
 
